@@ -1,3 +1,5 @@
+using Base.Test
+
 ADD = +
 
 SUB = -
@@ -17,19 +19,25 @@ end
 evalAST( var::Float64 ) = var
 function evalAST ( var::Array{Any,1} )
     evalargs = {}
+    oper = var[1]
     for item in var[2:end]
         push!(evalargs, evalAST(item))
     end
-    oper = var[1]
     return oper == SUM ? SUM(evalargs) : oper(evalargs[1],evalargs[2])
 end
 
-function timeAST ( var::Array{Any,1}, Iterations::Int64 = 100_000 )
+function timeAST ( var::Array{Any,1}, Iterations::Int64 = 100_000, ifCheck::Bool = true )
     result = 0.
-    for i in 1:Iterations
+    
+    tic()
+    for i = 1:Iterations
         result += evalAST(var)
     end
-    return result
+    toc()
+    
+    if ifCheck == true
+        @test_approx_eq_eps( result, 3_900_000, 0.001)
+    end
 end
 
 const ast = {SUM,
@@ -39,9 +47,11 @@ const ast = {SUM,
         {SUB,{ADD,{DIV,{MUL,40.,50.},60.},70.},80.}
 }
 
-timeAST({SUM,{MUL,{ADD,1.,1.},1.},{DIV,{SUB,2.,1.},1.}})
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
+# run the first time for timeAST() compiled
+#timeAST({SUM,{MUL,{ADD,1.,1.},1.},{DIV,{SUB,2.,1.},1.}}, 1, false)
+# Real Benchmark Followed
+timeAST(ast)
+print 
 
 None
 
