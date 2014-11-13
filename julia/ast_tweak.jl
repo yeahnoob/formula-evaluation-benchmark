@@ -7,66 +7,39 @@ DIV = /
 MUL = *
 
 function SUM (n::Array{Any, 1})
-    s = 0
+    s = 0.
     for item in n
         s += item
     end
     return s
 end
 
-function evalAST ( var )
-    oper = var[1]
+evalAST( var::Float64 ) = var
+function evalAST ( var::Array{Any,1} )
     evalargs = {}
     for item in var[2:end]
-        if (typeof(item) == Array{Any,1})
-            t = evalAST(item)
-            push!(evalargs, t)
-        else
-            push!(evalargs, item)
-        end
+        push!(evalargs, evalAST(item))
     end
-    return oper == SUM ? oper(evalargs) : oper(evalargs[1],evalargs[2])
+    oper = var[1]
+    return oper == SUM ? SUM(evalargs) : oper(evalargs[1],evalargs[2])
 end
 
-iterations = 100_000
-function timeAST ( var )
-    result = 0
-    for i in 1:iterations
+function timeAST ( var::Array{Any,1}, Iterations::Int64 = 100_000 )
+    result = 0.
+    for i in 1:Iterations
         result += evalAST(var)
     end
     return result
 end
 
-ast = {SUM,
+const ast = {SUM,
         {SUB,{ADD,{DIV,{MUL,10.,20.},30.},40.},50.},
         {SUB,{ADD,{DIV,{MUL,20.,30.},40.},50.},60.},
         {SUB,{ADD,{DIV,{MUL,30.,40.},50.},60.},70.},
         {SUB,{ADD,{DIV,{MUL,40.,50.},60.},70.},80.}
 }
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
-ast = {SUM,
-        {SUB,{ADD,{DIV,{MUL,50.,40.},30.},20.},10.},
-        {SUB,{ADD,{DIV,{MUL,60.,50.},40.},30.},20.},
-        {SUB,{ADD,{DIV,{MUL,70.,60.},50.},40.},30.},
-        {SUB,{ADD,{DIV,{MUL,80.,70.},60.},50.},40.}
-}
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
-ast = {SUM,
-        {SUB,{ADD,{DIV,{MUL,10.,20.},30.},40.},50.},
-        {SUB,{ADD,{DIV,{MUL,20.,30.},40.},50.},60.},
-        {SUB,{ADD,{DIV,{MUL,30.,40.},50.},60.},70.},
-        {SUB,{ADD,{DIV,{MUL,40.,50.},60.},70.},80.}
-}
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
-ast = {SUM,
-        {SUB,{ADD,{DIV,{MUL,50.,40.},30.},20.},10.},
-        {SUB,{ADD,{DIV,{MUL,60.,50.},40.},30.},20.},
-        {SUB,{ADD,{DIV,{MUL,70.,60.},50.},40.},30.},
-        {SUB,{ADD,{DIV,{MUL,80.,70.},60.},50.},40.}
-}
+
+timeAST({SUM,{MUL,{ADD,1.,1.},1.},{DIV,{SUB,2.,1.},1.}})
 @time result = timeAST(ast)
 print("The result number of AST is ", iround(result), "\n")
 
