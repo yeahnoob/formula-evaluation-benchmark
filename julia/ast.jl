@@ -2,6 +2,7 @@
 # Using Julia-v0.3.2,
 #   from julialang.org.
 ############################################################
+using Base.Test
 
 type ADD
     x::Float64
@@ -43,7 +44,7 @@ type SUM
     x::Array{Any,1}
 end
 function calc (n::SUM)
-    s = 0
+    s = 0.
     for item in n.x
         s += item
     end
@@ -62,16 +63,18 @@ function evalAST ( var )
             push!(evalargs, item)
         end
     end
-
     return calc(opertype(evalargs))
 end
-
-iterations = 100_000
+Iterations = 100_000
 function timeAST ( var )
-    result = 0
-    for i in 1:iterations
+    result = 0.
+    
+    tic()
+    for i = 1:Iterations
         result += evalAST(var)
     end
+    toc()
+    
     return result
 end
 
@@ -81,32 +84,16 @@ ast = {SUM,
         {SUB,{ADD,{DIV,{MUL,30.,40.},50.},60.},70.},
         {SUB,{ADD,{DIV,{MUL,40.,50.},60.},70.},80.}
 }
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
-ast = {SUM,
-        {SUB,{ADD,{DIV,{MUL,50.,40.},30.},20.},10.},
-        {SUB,{ADD,{DIV,{MUL,60.,50.},40.},30.},20.},
-        {SUB,{ADD,{DIV,{MUL,70.,60.},50.},40.},30.},
-        {SUB,{ADD,{DIV,{MUL,80.,70.},60.},50.},40.}
-}
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
+result = timeAST(ast)
+print("The result number of AST is ", result, "\n")
 ast = {SUM,
         {SUB,{ADD,{DIV,{MUL,10.,20.},30.},40.},50.},
         {SUB,{ADD,{DIV,{MUL,20.,30.},40.},50.},60.},
         {SUB,{ADD,{DIV,{MUL,30.,40.},50.},60.},70.},
         {SUB,{ADD,{DIV,{MUL,40.,50.},60.},70.},80.}
 }
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
-ast = {SUM,
-        {SUB,{ADD,{DIV,{MUL,50.,40.},30.},20.},10.},
-        {SUB,{ADD,{DIV,{MUL,60.,50.},40.},30.},20.},
-        {SUB,{ADD,{DIV,{MUL,70.,60.},50.},40.},30.},
-        {SUB,{ADD,{DIV,{MUL,80.,70.},60.},50.},40.}
-}
-@time result = timeAST(ast)
-print("The result number of AST is ", iround(result), "\n")
+result = timeAST(ast)
+print("The result number of AST is ", result, "\n")
 
 None
 
